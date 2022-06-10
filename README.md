@@ -1,0 +1,2 @@
+# ruby_reasearch
+REASEARCH AND DEVELOPMENT
