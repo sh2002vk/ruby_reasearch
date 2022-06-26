@@ -2,7 +2,7 @@
 
 api_urls = {
     "newsapi": "https://newsapi.org/v2/everything",
-    "mediastack": "mediastack.com",
+    "mediastack": "http://api.mediastack.com/v1/news",
     "newscatcherapi": "newscatcherapi.com"
 }
 

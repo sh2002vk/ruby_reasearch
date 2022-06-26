@@ -3,59 +3,56 @@ import os
 import requests
 import json
 from api_list import api_urls
-from datetime import datetime
-
-
-def convertDates(date: str):
-    epoch = datetime(1970, 1, 1)
-    creation_epoch = 0
-
-    try:
-        creation_epoch = (datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ") - epoch).total_seconds()
-    except Exception as e:
-        print(e)
-
-    return creation_epoch
-
+from helpers.general_helpers import convertDates
 
 # API info
 api_key = os.getenv("newsapiKey")
+path = os.getenv("datapath")
 api_endpoint = api_urls["newsapi"]
-q = "merger"  # Keywords the api is looking for
+keywords = "merger"  # Keywords the api is looking for
 params = {
     "apiKey": api_key,
-    "q": q,
+    "keywords": keywords,
     "language": "en",
     "page": 1
 }
 
 
-# Data store info
-path = "/Users/shubh/Desktop/Ruby/R & D/ruby_reasearch/risk_arbitrage/data_store/newsapi_store.json"
-merger_headlines = {}
-with open(path) as f:
-  merger_headlines = json.load(f)
+def update_data(previous_data: dict) -> (bool, int):
+    """
+        Updates current data store with information from newapi.org
 
+    :param previous_data:
+    :return:
+    """
 
-# Func body
-more = True
-count = params["page"]
-while more:
-    params["page"] = count
-    request = requests.get(url=api_endpoint, params=params)
-    data = request.json()
-    try:
+    more = True
+    count = params["page"]
+    count = 0
+    while more:
         count += 1
-        for obj in data["articles"]:
-            if obj["title"] not in merger_headlines:
-                merger_headlines[obj["title"]] = {
-                    "source": obj["source"]["name"],
-                    "published_at": convertDates(obj["publishedAt"])
-                }
+        params["page"] = count
+        request = requests.get(url=api_endpoint, params=params)
+        data = request.json()
+        try:
+            count += 1
+            for obj in data["articles"]:
+                if obj["title"] not in previous_data:
+                    previous_data[obj["title"]] = {
+                        "source": obj["source"]["name"],
+                        "published_at": convertDates(obj["publishedAt"], type="%Y-%m-%dT%H:%M:%SZ")
+                    }
+        except Exception as e:
+            more = False
+            print(e)
+
+    print(f'''Updated length of data from na is: {len(previous_data)}''')
+
+    try:
+        with open(path, 'w') as outfile:
+            json.dump(previous_data, outfile)
     except Exception as e:
-        more = False
-        print(e)
+        print(f'''DATA UPDATE FAILED: {e}''')
+        return False, count
 
-
-with open(path, 'w') as outfile:
-    json.dump(merger_headlines, outfile)
+    return True, count
