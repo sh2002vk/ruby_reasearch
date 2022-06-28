@@ -33,7 +33,8 @@ def getMediaStack(previous_data: dict) -> (bool, int):
                 if obj["title"] not in previous_data:
                     previous_data[obj["title"]] = {
                         "source": obj["source"],
-                        "published_at": convertDates(obj["published_at"][0:-6], type="%Y-%m-%dT%H:%M:%S")
+                        "published_at": convertDates(obj["published_at"][0:-6], type="%Y-%m-%dT%H:%M:%S"),
+                        "api": "MEDIASTACK"
                     }
             params["offset"] = params["offset"] + data["pagination"]["limit"]
             total = data["pagination"]["total"]
